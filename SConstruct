@@ -110,7 +110,7 @@ aGroup = strGroup.split('.')
 strModulePath = 'targets/jonchki/repository/%s/%s/%s' % ('/'.join(aGroup), strModule, PROJECT_VERSION)
 
 # Set the name of the artifact.
-strArtifact0 = 'bootpins'
+strArtifact0 = 'netx_reset'
 
 tArcList0 = atEnv.DEFAULT.ArchiveList('zip')
 tArcList0.AddFiles('netx/',
