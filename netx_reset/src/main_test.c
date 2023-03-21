@@ -15,6 +15,12 @@
 /*-----------------------------------*/
 
 
+static const unsigned char *s_pucOptionData;
+static unsigned int  s_sizOptionDataInBytes;
+
+extern unsigned char aucOptionBuffer[4096];
+
+
 static void timer_isr(void)
 {
 	HOSTDEF(ptAsicCtrlComArea);
@@ -22,7 +28,10 @@ static void timer_isr(void)
 
 
 	/* Copy the options. */
-
+	if( s_pucOptionData!=NULL && s_sizOptionDataInBytes!=0 )
+	{
+		memcpy(aucOptionBuffer, s_pucOptionData, s_sizOptionDataInBytes);
+	}
 
 	/* Reset the device. */
 	ptAsicCtrlArea->ulAsic_ctrl_access_key = ptAsicCtrlArea->ulAsic_ctrl_access_key;
@@ -172,9 +181,13 @@ TEST_RESULT_T test_main(TEST_PARAMETER_T *ptTestParam)
 	/* Get the test parameter. */
 	ptTestParams = (NETX_RESET_PARAMETER_T*)(ptTestParam->pvInitParams);
 	ulResetDelayTicks = ptTestParams->ulResetDelayTicks;
+	s_pucOptionData = ptTestParams->pucOptionData;
+	s_sizOptionDataInBytes = ptTestParams->sizOptionDataInBytes;
 
 	/* Show the parameter. */
 	uprintf("Reset delay: %d * 10ns\n", ulResetDelayTicks);
+	uprintf("Option address: 0x%08x\n", s_pucOptionData);
+	uprintf("Option size: %d bytes\n", s_sizOptionDataInBytes);
 
 	/* Switch off SYS led. */
 	rdy_run_setLEDs(RDYRUN_OFF);

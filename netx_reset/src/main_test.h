@@ -6,8 +6,8 @@
 typedef struct NETX_RESET_PARAMETER_STRUCT
 {
 	unsigned long ulResetDelayTicks;
+	const unsigned char *pucOptionData;
 	unsigned int  sizOptionDataInBytes;
-	unsigned long ulOptionDataAddress;
 } NETX_RESET_PARAMETER_T;
 
 

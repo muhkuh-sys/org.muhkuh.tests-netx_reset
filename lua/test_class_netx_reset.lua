@@ -23,10 +23,10 @@ function TestClassNetxReset:_init(strTestName, uiTestCase, tLogWriter, strLogLev
 
     P:U32('reconnect_retries', 'Number of reconnect retries.'):
       default(4):
-      required(true)
+      required(true),
 
---    P:P('option_file', 'Option file to determine the startup behaviour of the netX.'):
---      required(true),
+    P:P('option_file', 'Option file to determine the startup behaviour of the netX.'):
+      required(false),
   }
 end
 
@@ -48,7 +48,7 @@ function TestClassNetxReset:run()
   local ulReconnectDelayTicks = atParameter['reconnect_delay']:get()
   local ulReconnectRetries = atParameter['reconnect_retries']:get()
 
---  local strOptionFile = atParameter['option_file']:get()
+  local strOptionFile = atParameter['option_file']:get()
 
   ----------------------------------------------------------------------
   --
@@ -76,15 +76,27 @@ function TestClassNetxReset:run()
     error(strError)
   end
 
-  local tNetxReset = require 'netx_reset'()
---  tNetxReset:download_options(tPlugin, strOptionFile)
-  tNetxReset:netx_reset(tPlugin, ulResetDelayTicks)
 
+  ----------------------------------------------------------------------
+  --
+  -- Reset the netX.
+  --
+  local tNetxReset = require 'netx_reset'()
+  tNetxReset:netx_reset(tPlugin, ulResetDelayTicks, strOptionFile)
+
+  ----------------------------------------------------------------------
+  --
   -- Close the plugin.
+  --
   _G.tester:closeCommonPlugin()
   tPlugin = nil
   collectgarbage('collect');
 
+
+  ----------------------------------------------------------------------
+  --
+  -- Re-open the plugin.
+  --
   local socket = require 'socket'
   local ulRetries = 0
   repeat

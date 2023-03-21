@@ -25,6 +25,7 @@ MEMORY
 	ASSERT_EMPTY(rwx): ORIGIN = 0x00000000, LENGTH = 0
 	VECTORS(rwx):      ORIGIN = 0x00020000, LENGTH = 0x00000200
 	INTRAM(rwx):       ORIGIN = 0x00024000, LENGTH = 0x0001c000
+	OPTIONS(rw):       ORIGIN = 0x20080000, LENGTH = 0x00004000
 	IOVECTORS(rw):     ORIGIN = 0x2009FFF0, LENGTH = 0x00000010
 }
 
@@ -80,6 +81,12 @@ SECTIONS
 		. = . + 0x1000;
 		PROVIDE (stack_top = .);
 	} >INTRAM
+
+
+	.options ORIGIN(OPTIONS) (NOLOAD) :
+	{
+		PROVIDE ( aucOptionBuffer = . );
+	} >OPTIONS
 
 
 	/*.serialvectors 0x0809fff0 (NOLOAD) :*/
