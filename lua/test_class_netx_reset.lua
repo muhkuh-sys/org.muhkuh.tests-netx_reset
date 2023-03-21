@@ -14,7 +14,7 @@ function TestClassNetxReset:_init(strTestName, uiTestCase, tLogWriter, strLogLev
       required(false),
 
     P:U32('reset_delay', 'Delay of the reset in 10ns ticks.'):
-      default(50000000):
+      default(100000000):
       required(true),
 
     P:U32('reconnect_delay', 'Delay of the reconnect attempts in 1ms ticks.'):
