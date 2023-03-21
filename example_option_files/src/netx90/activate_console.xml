@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<HBootImage type="INTRAM">
+	<Chunks>
+		<Options>
+			<!-- Prevent booting a firmware by removing all boot sources. -->
+			<Option id="bootdev">
+				<U08>
+					BOOTDEV_NONE,
+					BOOTDEV_NONE,
+					BOOTDEV_NONE,
+					BOOTDEV_NONE,
+					BOOTDEV_NONE,
+					BOOTDEV_NONE,
+					BOOTDEV_NONE,
+					BOOTDEV_NONE
+				</U08>
+			</Option>
+
+			<!-- Prevent booting the alternative firmware. -->
+			<!-- This would reset the device and all our setting are gone. -->
+			<Option id="alternative_image">
+				<U08>0</U08>
+				<U08>0</U08>
+				<U08>1</U08>
+			</Option>
+		</Options>
+	</Chunks>
+</HBootImage>

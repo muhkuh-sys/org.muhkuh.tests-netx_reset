@@ -1,0 +1,76 @@
+# -*- coding: utf-8 -*-
+#-------------------------------------------------------------------------#
+#   Copyright (C) 2023 by Christoph Thelen                                #
+#   doc_bacardi@users.sourceforge.net                                     #
+#                                                                         #
+#   This program is free software; you can redistribute it and/or modify  #
+#   it under the terms of the GNU General Public License as published by  #
+#   the Free Software Foundation; either version 2 of the License, or     #
+#   (at your option) any later version.                                   #
+#                                                                         #
+#   This program is distributed in the hope that it will be useful,       #
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#   GNU General Public License for more details.                          #
+#                                                                         #
+#   You should have received a copy of the GNU General Public License     #
+#   along with this program; if not, write to the                         #
+#   Free Software Foundation, Inc.,                                       #
+#   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
+#-------------------------------------------------------------------------#
+
+
+#----------------------------------------------------------------------------
+#
+# Import all required objects.
+#
+Import('atEnv')
+import os
+
+
+#----------------------------------------------------------------------------
+# This is the list of sources. The elements must be separated with whitespace
+# (i.e. spaces, tabs, newlines). The amount of whitespace does not matter.
+sources = """
+	src/header.c
+	src/init_netx_test.S
+	src/main_test.c
+	src/vectors_com_intram.c
+"""
+
+
+#----------------------------------------------------------------------------
+#
+# Build the bootpins test.
+#
+aCppPath = ['src', '#platform/src', '#platform/src/lib', '#targets/version']
+
+def build_test(tBaseEnv, strID, strLdFile):
+    tEnv = tBaseEnv.Clone()
+    tEnv.CompileDb(os.path.join('targets', strID, 'compile_commands.json'))
+    tEnv.Replace(LDFILE = strLdFile)
+    tEnv.Append(CPPPATH = aCppPath)
+    tSrc = tEnv.SetBuildPath(os.path.join('targets', strID), 'src', sources)
+    tElf = tEnv.Elf(os.path.join('targets', strID, 'netx_reset.elf'), tSrc + tEnv['PLATFORM_LIBRARY'])
+    tBin = tEnv.ObjCopy(os.path.join('targets', 'netx_reset_%s.bin' % strID), tElf)
+    tTxt = tEnv.ObjDump(os.path.join('targets', 'netx_reset_%s.txt' % strID), tElf, OBJDUMP_FLAGS=['--disassemble-all', '--disassemble', '--source', '--all-headers', '--wide'])
+
+    return tBin, tElf
+
+#bootpins_netx4000, tElf_netx4000 = build_bootpins(atEnv.NETX4000, 'netx4000', 'src/netx4000/netx4000_cr7_llram.ld')
+#bootpins_netx500, tElf_netx500 = build_bootpins(atEnv.NETX500, 'netx500', 'src/netx500/netx500.ld')
+#bootpins_netx90_mpw, tElf_netx90_mpw = build_bootpins(atEnv.NETX90_MPW, 'netx90_mpw', 'src/netx90/netx90.ld')
+netx_reset_netx90, tElf_netx90 = build_test(atEnv.NETX90, 'netx90', 'src/netx90/netx90.ld')
+#bootpins_netx56, tElf_netx56 = build_bootpins(atEnv.NETX56, 'netx56', 'src/netx56/netx56.ld')
+#bootpins_netx50, tElf_netx50 = build_bootpins(atEnv.NETX50, 'netx50', 'src/netx50/netx50.ld')
+#bootpins_netx10, tElf_netx10 = build_bootpins(atEnv.NETX10, 'netx10', 'src/netx10/netx10.ld')
+
+Export('netx_reset_netx90')
+
+
+#----------------------------------------------------------------------------
+#
+# Process the LUA template.
+#
+netx_reset_lua = atEnv.NETX90.GccSymbolTemplate('targets/lua/netx_reset.lua', tElf_netx90, GCCSYMBOLTEMPLATE_TEMPLATE=File('templates/netx_reset.lua'))
+Export('netx_reset_lua')
