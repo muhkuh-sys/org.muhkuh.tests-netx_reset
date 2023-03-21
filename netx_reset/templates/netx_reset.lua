@@ -43,7 +43,7 @@ end
 
 
 
-function NetxReset:netx_reset(tPlugin)
+function NetxReset:netx_reset(tPlugin, ulResetDelayTicks)
   -- Get the binary for the ASIC.
   local tAsicTyp = tPlugin:GetChiptyp()
   local strBinary = self.astrBinaryName[tAsicTyp]
@@ -54,6 +54,8 @@ function NetxReset:netx_reset(tPlugin)
 
   local tester = _G.tester
   local atParameter = {
+    ulResetDelayTicks,
+    0,
     0
   }
   local ulResult = tester:mbin_simple_run(tPlugin, strNetxBinary, atParameter)

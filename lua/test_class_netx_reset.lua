@@ -13,6 +13,18 @@ function TestClassNetxReset:_init(strTestName, uiTestCase, tLogWriter, strLogLev
     P:P('plugin_options', 'Plugin options as a JSON object.'):
       required(false),
 
+    P:U32('reset_delay', 'Delay of the reset in 10ns ticks.'):
+      default(50000000):
+      required(true),
+
+    P:U32('reconnect_delay', 'Delay of the reconnect attempts in 1ms ticks.'):
+      default(2000):
+      required(true),
+
+    P:U32('reconnect_retries', 'Number of reconnect retries.'):
+      default(4):
+      required(true)
+
 --    P:P('option_file', 'Option file to determine the startup behaviour of the netX.'):
 --      required(true),
   }
@@ -31,6 +43,11 @@ function TestClassNetxReset:run()
   --
   local strPluginPattern = atParameter['plugin']:get()
   local strPluginOptions = atParameter['plugin_options']:get()
+
+  local ulResetDelayTicks = atParameter['reset_delay']:get()
+  local ulReconnectDelayTicks = atParameter['reconnect_delay']:get()
+  local ulReconnectRetries = atParameter['reconnect_retries']:get()
+
 --  local strOptionFile = atParameter['option_file']:get()
 
   ----------------------------------------------------------------------
@@ -61,25 +78,38 @@ function TestClassNetxReset:run()
 
   local tNetxReset = require 'netx_reset'()
 --  tNetxReset:download_options(tPlugin, strOptionFile)
-  tNetxReset:netx_reset(tPlugin)
+  tNetxReset:netx_reset(tPlugin, ulResetDelayTicks)
 
   -- Close the plugin.
   _G.tester:closeCommonPlugin()
   tPlugin = nil
---[[
-  -- Delay a while and re-open the plugin.
-  os.execute('sleep 3')
-  tPlugin = _G.tester:getCommonPlugin(strPluginPattern, atPluginOptions)
-  if tPlugin==nil then
-    local strPluginOptionsPretty = pl.pretty.write(atPluginOptions)
-    local strError = string.format(
-      'Failed to re-open the connection to the netX with pattern "%s" and options "%s".',
-      strPluginPattern,
-      strPluginOptionsPretty
-    )
-    error(strError)
-  end
---]]
+  collectgarbage('collect');
+
+  local socket = require 'socket'
+  local ulRetries = 0
+  repeat
+    -- Delay a while and re-open the plugin.
+    socket.sleep(ulReconnectDelayTicks / 1000)
+
+    tPlugin = _G.tester:getCommonPlugin(strPluginPattern, atPluginOptions)
+    if tPlugin==nil then
+      local strPluginOptionsPretty = pl.pretty.write(atPluginOptions)
+      local strError = string.format(
+        'Failed to re-open the connection to the netX with pattern "%s" and options "%s".',
+        strPluginPattern,
+        strPluginOptionsPretty
+      )
+
+      ulRetries = ulRetries + 1
+      if ulRetries>ulReconnectRetries then
+        tLog.error('Failed to connect and no more retries left: %s', strError)
+        error(strError)
+      else
+        tLog.error('Failed to connect: %s', strError)
+      end
+    end
+  until tPlugin~=nil
+
   print("")
   print(" #######  ##    ## ")
   print("##     ## ##   ##  ")

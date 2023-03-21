@@ -17,13 +17,18 @@
 
 static void timer_isr(void)
 {
-	BLINKI_HANDLE_T tBlinkiHandle;
+	HOSTDEF(ptAsicCtrlComArea);
+	HOSTDEF(ptAsicCtrlArea);
 
-	rdy_run_blinki_init(&tBlinkiHandle, 0x00000055, 0x00000150);
-	while(1)
-	{
-		rdy_run_blinki(&tBlinkiHandle);
-	};
+
+	/* Copy the options. */
+
+
+	/* Reset the device. */
+	ptAsicCtrlArea->ulAsic_ctrl_access_key = ptAsicCtrlArea->ulAsic_ctrl_access_key;
+	ptAsicCtrlComArea->ulReset_ctrl = HOSTMSK(reset_ctrl_RES_REQ_FIRMWARE);
+
+	while(1) {};
 }
 
 
@@ -117,7 +122,7 @@ static void clear_gpio_timer_irq(void)
 
 
 
-static void start_gpio_timer_irq(void)
+static void start_gpio_timer_irq(unsigned long ulResetDelayTicks)
 {
 	HOSTDEF(ptGpioComArea);
 	unsigned long ulValue;
@@ -130,7 +135,7 @@ static void start_gpio_timer_irq(void)
 	 * The timer runs with the CPU clock of 100MHz, which is a step of 10ns.
 	 * A value of 300000000 results in 3 seconds.
 	 */
-	ptGpioComArea->ulGpio_counter0_max = 300000000;
+	ptGpioComArea->ulGpio_counter0_max = ulResetDelayTicks;
 	ptGpioComArea->ulGpio_counter0_cnt = 0;
 
 	/* Start the counter. */
@@ -156,18 +161,23 @@ TEST_RESULT_T test_main(TEST_PARAMETER_T *ptTestParam);
 TEST_RESULT_T test_main(TEST_PARAMETER_T *ptTestParam)
 {
 	NETX_RESET_PARAMETER_T *ptTestParams;
+	unsigned long ulResetDelayTicks;
 
 
 	systime_init();
 
-//	uprintf("\f. *** netX reset by doc_bacardi@users.sourceforge.net ***\n");
-//	uprintf("V" VERSION_ALL "\n\n");
-
-	/* Switch off SYS led. */
-	rdy_run_setLEDs(RDYRUN_OFF);
+	uprintf("\f. *** netX reset by doc_bacardi@users.sourceforge.net ***\n");
+	uprintf("V" VERSION_ALL "\n\n");
 
 	/* Get the test parameter. */
 	ptTestParams = (NETX_RESET_PARAMETER_T*)(ptTestParam->pvInitParams);
+	ulResetDelayTicks = ptTestParams->ulResetDelayTicks;
+
+	/* Show the parameter. */
+	uprintf("Reset delay: %d * 10ns\n", ulResetDelayTicks);
+
+	/* Switch off SYS led. */
+	rdy_run_setLEDs(RDYRUN_OFF);
 
 	/* Clear the GPIO timer IRQ. */
 	clear_gpio_timer_irq();
@@ -178,10 +188,9 @@ TEST_RESULT_T test_main(TEST_PARAMETER_T *ptTestParam)
 	enable_irqs();
 
 	/* Setup the timer IRQ. */
-	start_gpio_timer_irq();
+	start_gpio_timer_irq(ulResetDelayTicks);
 
-	/* Wait for an IRQ. */
-	while(1) {};
+	return TEST_RESULT_OK;
 }
 
 /*-----------------------------------*/
