@@ -60,7 +60,7 @@ atEnv.DEFAULT.Version('targets/version/version.h', 'templates/version.h')
 # Build all sub-projects.
 #
 SConscript('example_option_files/SConscript')
-Import('bb0_netx90_activate_console')
+Import('example_option_file_netx90_activat_console')
 
 SConscript('netx_reset/SConscript')
 Import('netx_reset_netx90')
@@ -122,6 +122,8 @@ tArcList0.AddFiles('templates/',
     'lua/test.lua')
 #tArcList0.AddFiles('doc/',
 #    tDoc)
+tArcList0.AddFiles('example_option_files/netx90',
+    example_option_file_netx90_activat_console)
 tArcList0.AddFiles('',
     'installer/jonchki/install.lua',
     'installer/jonchki/install_testcase.lua')

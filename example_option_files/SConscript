@@ -32,6 +32,6 @@ import os
 #
 # Build the options.
 #
-bb0_netx90_activate_console = atEnv.NETX90.HBootImage('targets/netx90/activate_console.bin', 'src/netx90/activate_console.xml')
+example_option_file_netx90_activat_console = atEnv.NETX90.HBootImage('targets/netx90/activate_console.bin', 'src/netx90/activate_console.xml')
 
-Export('bb0_netx90_activate_console')
+Export('example_option_file_netx90_activat_console')
