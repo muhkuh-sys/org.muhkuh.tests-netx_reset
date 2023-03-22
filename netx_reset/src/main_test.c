@@ -31,6 +31,7 @@ static void timer_isr(void)
 	if( s_pucOptionData!=NULL && s_sizOptionDataInBytes!=0 )
 	{
 		memcpy(aucOptionBuffer, s_pucOptionData, s_sizOptionDataInBytes);
+		memcpy(aucOptionBuffer, s_pucOptionData, s_sizOptionDataInBytes);
 	}
 
 	/* Reset the device. */
